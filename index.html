@@ -15,7 +15,7 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
         }
-        .loading { animation: pulse-btn 1.5s infinite; cursor: wait; }
+        .loading { animation: pulse-btn 1.5s infinite; cursor: wait; pointer-events: none; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased">
@@ -117,6 +117,92 @@
             </p>
             
             <button id="approveBtn" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-full transition transform hover:scale-105 shadow-lg shadow-blue-900/50 cursor-pointer">
-                <i data-lucide="thumbs-up" class="w-5 h-5"></i>
-                <span>Działaj Roger, robimy to!</span>
+                <span id="btn-icon-wrapper" class="flex items-center justify-center">
+                    <i data-lucide="thumbs-up" class="w-5 h-5"></i>
+                </span>
+                <span id="btn-text">Działaj Roger, robimy to!</span>
             </button>
+            
+            <p class="mt-8 text-xs text-slate-500">Stworzono dla MW House | 2026</p>
+        </div>
+    </footer>
+
+    <script>
+        // 1. Definicja zmiennych
+        const webhookUrl = "https://primary-production-58a3.up.railway.app/webhook-test/b384e13e-af9b-4154-8d96-7acb2c526918";
+        const btn = document.getElementById('approveBtn');
+        const btnText = document.getElementById('btn-text');
+        const iconWrapper = document.getElementById('btn-icon-wrapper');
+
+        // 2. Obsługa kliknięcia (Dodana PRZED inicjalizacją ikon, aby mieć pewność że zadziała)
+        if (btn) {
+            btn.addEventListener('click', async () => {
+                // Blokada wielokrotnego kliknięcia
+                if (btn.disabled) return;
+
+                // Zmiana stanu UI na "Wysyłanie"
+                const originalText = btnText.innerText;
+                btnText.innerText = "Wysyłam potwierdzenie...";
+                btn.classList.add('loading', 'bg-blue-800');
+                btn.disabled = true;
+
+                try {
+                    // Wysłanie danych do Webhooka
+                    const response = await fetch(webhookUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            event: "plan_approved",
+                            user: "Mateusz",
+                            project: "MW House Expansion",
+                            timestamp: new Date().toISOString()
+                        })
+                    });
+
+                    // Sukces - jeśli serwer odpowiedział OK
+                    if (response.ok) {
+                        btn.classList.remove('loading', 'bg-blue-600', 'bg-blue-800', 'hover:bg-blue-700');
+                        btn.classList.add('bg-green-600', 'hover:bg-green-600', 'cursor-default');
+                        btnText.innerText = "Wysłano! Działam 🚀";
+                        
+                        // Zmiana ikony na check
+                        iconWrapper.innerHTML = '<i data-lucide="check-circle-2" class="w-5 h-5"></i>';
+                        // Odświeżenie ikon
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
+                    } else {
+                        throw new Error('Serwer zwrócił błąd: ' + response.status);
+                    }
+
+                } catch (error) {
+                    // Błąd (np. brak sieci, błąd CORS)
+                    console.error('Błąd wysyłania:', error);
+                    alert("Wystąpił błąd podczas wysyłania (sprawdź konsolę lub połączenie).");
+                    
+                    // Reset przycisku
+                    btn.classList.remove('loading');
+                    btnText.innerText = "Błąd. Spróbuj ponownie.";
+                    btn.classList.add('bg-red-600');
+                    btn.disabled = false;
+                    
+                    setTimeout(() => {
+                        btnText.innerText = originalText;
+                        btn.classList.remove('bg-red-600');
+                        btn.classList.add('bg-blue-600');
+                    }, 3000);
+                }
+            });
+        }
+
+        // 3. Inicjalizacja ikon na końcu
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        } else {
+            console.error("Biblioteka Lucide nie załadowała się.");
+        }
+    </script>
+</body>
+</html>
