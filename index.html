@@ -128,7 +128,7 @@
     </footer>
 
     <script>
-        // 1. Definicja zmiennych
+        // 1. Definicja zmiennych (WEBHOOK PRODUKCYJNY)
         const webhookUrl = "https://primary-production-58a3.up.railway.app/webhook/b384e13e-af9b-4154-8d96-7acb2c526918";
         const btn = document.getElementById('approveBtn');
         const btnText = document.getElementById('btn-text');
@@ -180,7 +180,7 @@
                 } catch (error) {
                     // Błąd (np. brak sieci, błąd CORS)
                     console.error('Błąd wysyłania:', error);
-                    alert("Wystąpił błąd podczas wysyłania (sprawdź konsolę lub połączenie).");
+                    alert("Wystąpił błąd podczas wysyłania. Upewnij się, że masz połączenie z internetem.");
                     
                     // Reset przycisku
                     btn.classList.remove('loading');
@@ -206,4 +206,3 @@
     </script>
 </body>
 </html>
-
